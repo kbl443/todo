@@ -1,0 +1,19 @@
+name: "todo"
+arch: "amd64"
+platform: "linux"
+version: "0.1.0~alpha"
+section: "default"
+priority: "extra"
+maintainer: "Your Name <your.email@example.com>"
+description: |
+  A Todo App.
+vendor: "the"
+homepage: "https://not-my-website.com"
+license: "MIT"
+contents:
+  - src: ./bin/todo
+    dst: /usr/bin/todo
+  - src: ./build/todo.desktop
+    dst: /usr/share/applications/todo.desktop
+  - src: ./build/appicon.png
+    dst: /usr/share/icons/hicolor/256x256/apps/todo.png

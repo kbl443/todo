@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Todo
+Exec=todo
+Icon=todo
+Type=Application
+Categories=Utility;
+Comment=A Todo App.

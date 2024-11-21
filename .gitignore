@@ -1,0 +1,9 @@
+.task/
+
+bin/
+build/appimage/
+frontend/bindings/
+frontend/dist/
+frontend/node_modules
+
+*.db
