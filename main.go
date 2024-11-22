@@ -227,17 +227,6 @@ func main() {
 		app.EmitEvent("feedbackCreated", "Created!!!")
 	})
 
-	app.OnEvent("toggleTodoCompleted", func(e *application.CustomEvent) {
-		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
-		i, _ := strconv.Atoi(fmt.Sprintf("%.f", e.Data))
-		todoItemsJSON, err := ToggleTodoItem(db, i)
-		if err != nil {
-			app.Logger.Error(fmt.Sprintf("Error toggling todo: %v", err))
-			return
-		}
-		app.EmitEvent("responseTodos", todoItemsJSON)
-	})
-
 	app.OnEvent("deleteTodo", func(e *application.CustomEvent) {
 		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
 		i, _ := strconv.Atoi(fmt.Sprintf("%.f", e.Data))
@@ -265,6 +254,17 @@ func main() {
 		app.EmitEvent("responseSingleItem", singleTodoJSON)
 	})
 
+	app.OnEvent("toggleTodoCompleted", func(e *application.CustomEvent) {
+		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
+		i, _ := strconv.Atoi(fmt.Sprintf("%.f", e.Data))
+		todoItemsJSON, err := ToggleTodoItem(db, i)
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("Error toggling todo: %v", err))
+			return
+		}
+		app.EmitEvent("responseTodos", todoItemsJSON)
+	})
+
 	app.OnEvent("editDescription", func(e *application.CustomEvent) {
 		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
 		data := e.Data.([]interface{})
@@ -281,7 +281,8 @@ func main() {
 			return
 		}
 		app.EmitEvent("responseSingleItem", updatedTodoJSON)
-		app.EmitEvent("feedbackSaved", "Updated!!!")
+		app.EmitEvent("feedbackSaved", itemID)
+
 	})
 
 	// to open a new window for the required item
@@ -311,7 +312,7 @@ func main() {
 		//		windowX, windowY := windowPositions[windowPosition-1].x, windowPositions[windowPosition-1].y
 
 		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-			Title: "todo item",
+			Title: itemID,
 			Mac: application.MacWindow{
 				InvisibleTitleBarHeight: 50,
 				Backdrop:                application.MacBackdropTranslucent,

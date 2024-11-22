@@ -8,29 +8,7 @@ window.addEventListener("load", function() {
 const defaultView = document.getElementById('default-view');
 const dynamicView = document.getElementById('dynamic-view');
 
-//////////////////////////////////////////
-// Theme toggle functionality
-//////////////////////////////////////////
-const themeToggleBtn = document.getElementById('theme-toggle-btn');
-const themeIcon = themeToggleBtn.querySelector('.theme-icon');
 
-// Check for saved theme preference
-const savedTheme = localStorage.getItem('theme') || 'dark';
-document.documentElement.setAttribute('data-theme', savedTheme);
-updateThemeIcon(savedTheme);
-
-themeToggleBtn.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
-});
-
-function updateThemeIcon(theme) {
-    themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
-}
 
 //////////////////////////////////////////
 // if no hash it will show default view, request all items
@@ -58,9 +36,35 @@ function handleHashChange() {
     dynamicView.style.display = 'none';
     defaultView.style.display = 'block';
 
-    Events.Emit({ name: 'requestTodos', data: 'embtee' });
+    Events.Emit({ name: 'requestTodos', data: 'useless' });
   }
 }
+
+//////////////////////////////////////////
+// Submit form to create a new item
+//////////////////////////////////////////
+document.getElementById('todo-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  var title = document.getElementById('title').value;
+  var description = document.getElementById('description').value;
+  var dueDate = document.getElementById('dueDate').value;
+
+  var todoItem = {
+      title: title,
+      description: description,
+      completed: false,
+      dueDate: dueDate
+  };
+  // stringify the object so it's sent as JSON string
+  Events.Emit({ name: 'createTodo', data: JSON.stringify(todoItem) });
+
+
+  // Clear the form
+  document.getElementById('title').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('dueDate').value = '';
+});
 
 
 //////////////////////////////////////////
@@ -88,7 +92,7 @@ Events.On('responseTodos', (event) => {
   if (!todoItems || todoItems.length === 0) {
     // If there are no todo items, display the "create your first element" message
     const noItemsMessage = document.createElement('p');
-    noItemsMessage.textContent = 'Create your first item';
+    noItemsMessage.textContent = 'nothing todo here';
     todoListElement.appendChild(noItemsMessage);
   } else {
     // Sort the todoItems array based on a specific property
@@ -142,11 +146,10 @@ Events.On('responseTodos', (event) => {
 //////////////////////////////////////////
 Events.On('responseSingleItem', (event) => {
   const {data} = event;
+  console.log(data);
   if (data !== null) {
     const todoItem = JSON.parse(data[0]);
     if (todoItem !== null) {
-
-
 
       const singleTodoElement = document.createElement('div');
       singleTodoElement.classList.add('single-todo');
@@ -188,72 +191,80 @@ Events.On('responseSingleItem', (event) => {
       
       // Close window
       singleTodoElement.querySelector('.cancel-edit').addEventListener('click', () => {
-        Events.Emit({ name: 'close-window', data: 'embtee' });
+        Events.Emit({ name: 'close-window', data: 'useless' });
       });
       
-          
+      //////////////////////////////////////////
+      // Showing the element "Updated!!!"
+      //////////////////////////////////////////
+      Events.On('feedbackSaved', (event) => {
+        // Check if the current window's item ID matches the received item ID
+        if (Number(window.location.hash.slice(1)) === event.data[0]) {
+          console.log('showing feedback "updated!"');
       
+          // Create the feedback element
+          const feedbackElement = document.createElement('div');
+          feedbackElement.classList.add('feedback-note');
+          feedbackElement.textContent = 'Updated!!!';
+      
+          // Add the feedback element to the DOM
+          singleTodoElement.appendChild(feedbackElement);
+      
+          // Show the feedback element
+          setTimeout(() => {
+            feedbackElement.style.opacity = '1';
+          }, 100);
+      
+          // Hide the feedback element after 1 second
+          setTimeout(() => {
+            feedbackElement.style.opacity = '0';
+            setTimeout(() => {
+              singleTodoElement.removeChild(feedbackElement);
+            }, 500);
+          }, 1000);
+        }
+      });
+      
+
       if (!window.isFirstItemShown) {
         dynamicView.appendChild(singleTodoElement);
         window.isFirstItemShown = true;
       }
     } else {
-      const singleTodoElement = document.createElement('div');
-      singleTodoElement.classList.add('single-todo');
-      singleTodoElement.textContent = 'did you just delete the item???';
+      console.log(1);
+      const singleTodoElement = document.createElement('p');
+      singleTodoElement.classList.add('error');
+      singleTodoElement.innerText = 'did you just delete the item???';
       // to close the current window
       const cancelElement = document.createElement('button');
       cancelElement.classList.add('cancel-edit');
       cancelElement.textContent = 'close';
       cancelElement.addEventListener('click', () => {
         
-        Events.Emit({ name: 'close-window', data: 'embtee' });
+        Events.Emit({ name: 'close-window', data: 'useless' });
       });
       dynamicView.appendChild(singleTodoElement);
       dynamicView.appendChild(cancelElement);
     }
   } else {
-    const singleTodoElement = document.createElement('div');
-    singleTodoElement.classList.add('single-todo');
-    singleTodoElement.textContent = 'The requested item could not be found. Please try again.';
+    console.log(2);
+    const singleTodoElement = document.createElement('p');
+    singleTodoElement.classList.add('error');
+    singleTodoElement.innerText = 'The requested item could not be found. Please try again.';
     // to close the current window
     const cancelElement = document.createElement('button');
     cancelElement.classList.add('cancel-edit');
     cancelElement.textContent = 'close';
     cancelElement.addEventListener('click', () => {
       
-      Events.Emit({ name: 'close-window', data: 'embtee' });
+      Events.Emit({ name: 'close-window', data: 'useless' });
     });
     dynamicView.appendChild(singleTodoElement);
     dynamicView.appendChild(cancelElement);
   }
 });
 
-//////////////////////////////////////////
-// Submit form to create a new item
-//////////////////////////////////////////
-document.getElementById('todo-form').addEventListener('submit', function(event) {
-    event.preventDefault();
 
-    var title = document.getElementById('title').value;
-    var description = document.getElementById('description').value;
-    var dueDate = document.getElementById('dueDate').value;
-
-    var todoItem = {
-        title: title,
-        description: description,
-        completed: false,
-        dueDate: dueDate
-    };
-    // stringify the object so it's sent as JSON string
-    Events.Emit({ name: 'createTodo', data: JSON.stringify(todoItem) });
-
-
-    // Clear the form
-    document.getElementById('title').value = '';
-    document.getElementById('description').value = '';
-    document.getElementById('dueDate').value = '';
-});
 
 //////////////////////////////////////////
 // Showing the element "Created!!!"
@@ -282,40 +293,32 @@ Events.On('feedbackCreated', (event) => {
 });
 
 
+
+
 //////////////////////////////////////////
-// Showing the element "Updated!!!"
+// Theme toggle
 //////////////////////////////////////////
-Events.On('feedbackSaved', (event) => {
-  // Create the feedback element
-  const feedbackElement = document.createElement('div');
-  feedbackElement.classList.add('feedback-note');
-  feedbackElement.textContent = event.data;
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const themeIcon = themeToggleBtn.querySelector('.theme-icon');
 
-  // Add the feedback element to the DOM
-  dynamicView.appendChild(feedbackElement);
+// Check for saved theme preference
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+updateThemeIcon(savedTheme);
 
-  // Show the feedback element
-  setTimeout(() => {
-    feedbackElement.style.opacity = '1';
-  }, 100);
-
-  // Hide the feedback element after 1 second
-  setTimeout(() => {
-    feedbackElement.style.opacity = '0';
-    setTimeout(() => {
-      dynamicView.removeChild(feedbackElement);
-    }, 500);
-  }, 1000);
+themeToggleBtn.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
 });
 
+function updateThemeIcon(theme) {
+    themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+}
 
-//////////////////////////////////////////
-// time
-//////////////////////////////////////////
-const timeElement = document.getElementById('time');
-Events.On('time', (time) => {
-    timeElement.innerText = time.data;
-});
 
 //////////////////////////////////////////
 // due date format
@@ -335,3 +338,13 @@ function formatDueDate(dueDate) {
     return `Due in ${diffInDays} days`;
   }
 }
+
+
+
+//////////////////////////////////////////
+// time
+//////////////////////////////////////////
+const timeElement = document.getElementById('time');
+Events.On('time', (time) => {
+    timeElement.innerText = time.data;
+});
