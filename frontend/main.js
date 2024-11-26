@@ -50,6 +50,13 @@ document.getElementById('todo-form').addEventListener('submit', function(event) 
   var description = document.getElementById('description').value;
   var dueDate = document.getElementById('dueDate').value;
 
+  // Check if the dueDate is empty (user didn't select a date)
+  if (!dueDate) {
+    // Get the current date
+    const today = new Date().toISOString().split('T')[0];
+    dueDate = today;
+  }
+
   var todoItem = {
       title: title,
       description: description,
@@ -63,7 +70,7 @@ document.getElementById('todo-form').addEventListener('submit', function(event) 
   // Clear the form
   document.getElementById('title').value = '';
   document.getElementById('description').value = '';
-  document.getElementById('dueDate').value = '';
+  //document.getElementById('dueDate').value = '';
 });
 
 
@@ -172,6 +179,7 @@ Events.On('responseSingleItem', (event) => {
       <div class="todo-content">
         <div class="todo-description" contenteditable="plaintext-only">${todoItem.description}</div>
       </div>
+      <p>end</p>
     `;
     
 

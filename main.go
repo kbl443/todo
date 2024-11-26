@@ -229,13 +229,26 @@ func main() {
 
 	app.OnEvent("deleteTodo", func(e *application.CustomEvent) {
 		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
-		i, _ := strconv.Atoi(fmt.Sprintf("%.f", e.Data))
-		todoItemsJSON, err := DeleteTodo(db, i)
-		if err != nil {
-			app.Logger.Error(fmt.Sprintf("Error deleting todo: %v", err))
-			return
-		}
-		app.EmitEvent("responseTodos", todoItemsJSON)
+		dialog := application.QuestionDialog().
+			SetTitle("Delete").
+			SetMessage("are you sure?")
+		no := dialog.AddButton("no [Esc]")
+		dialog.SetCancelButton(no)
+		yes := dialog.AddButton("yes")
+		yes.OnClick(func() {
+			i, _ := strconv.Atoi(fmt.Sprintf("%.f", e.Data))
+			todoItemsJSON, err := DeleteTodo(db, i)
+			if err != nil {
+				app.Logger.Error(fmt.Sprintf("Error deleting todo: %v", err))
+				return
+			}
+			app.EmitEvent("responseTodos", todoItemsJSON)
+		})
+
+		dialog.SetDefaultButton(yes)
+
+		dialog.Show()
+
 	})
 
 	app.OnEvent("requestSingleItem", func(e *application.CustomEvent) {
@@ -249,6 +262,10 @@ func main() {
 		singleTodoJSON, err := GetSingleItem(db, itemID)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("Error fetching single item: %v", err))
+			dialog := application.InfoDialog()
+			dialog.SetTitle("00.")
+			dialog.SetMessage(fmt.Sprintf("%v", err))
+			dialog.Show()
 			return
 		}
 		app.EmitEvent("responseSingleItem", singleTodoJSON)
@@ -312,7 +329,8 @@ func main() {
 		//		windowX, windowY := windowPositions[windowPosition-1].x, windowPositions[windowPosition-1].y
 
 		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-			Title: itemID,
+			//Name:  fmt.Sprintf("Item-number-%s", itemID),
+			Title: fmt.Sprintf("Item id: %s", itemID),
 			Mac: application.MacWindow{
 				InvisibleTitleBarHeight: 50,
 				Backdrop:                application.MacBackdropTranslucent,
