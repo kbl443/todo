@@ -131,33 +131,32 @@ func DeleteTodo(db *sql.DB, itemID int) (string, error) {
 	return GetTodoItems(db)
 }
 
-func EditDescription(db *sql.DB, itemID int, newDescription string) (string, error) {
+func EditDescription(db *sql.DB, itemID int, newDescription string) error {
 	var item TodoItem
 	err := db.QueryRow("SELECT id, title, description, completed, dueDate FROM todo_items WHERE id = ?", itemID).
 		Scan(&item.ID, &item.Title, &item.Description, &item.Completed, &item.DueDate)
 	if err != nil {
-		return "", fmt.Errorf("fetch todo item failed: %w", err)
+		return err
 	}
 
 	item.Description = newDescription
 
 	stmt, err := db.Prepare("UPDATE todo_items SET description = ? WHERE id = ?")
 	if err != nil {
-		return "", fmt.Errorf("prepare update statement failed: %w", err)
+		return err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(item.Description, item.ID)
 	if err != nil {
-		return "", fmt.Errorf("execute update failed: %w", err)
+		return err
 	}
 
-	updatedItemJSON, err := json.Marshal(item)
 	if err != nil {
-		return "", fmt.Errorf("marshal updated todo item failed: %w", err)
+		return err
 	}
 
-	return string(updatedItemJSON), nil
+	return err
 }
 
 func main() {
@@ -291,13 +290,13 @@ func main() {
 			return
 		}
 		newDescription := fmt.Sprintf("%v", data[1])
-
-		updatedTodoJSON, err := EditDescription(db, itemID, newDescription)
+		//updatedTodoJSON
+		err = EditDescription(db, itemID, newDescription)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("Error editing description: %v", err))
 			return
 		}
-		app.EmitEvent("responseSingleItem", updatedTodoJSON)
+		//app.EmitEvent("responseSingleItem", updatedTodoJSON)
 		app.EmitEvent("feedbackSaved", itemID)
 
 	})
@@ -329,7 +328,7 @@ func main() {
 		//		windowX, windowY := windowPositions[windowPosition-1].x, windowPositions[windowPosition-1].y
 
 		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-			//Name:  fmt.Sprintf("Item-number-%s", itemID),
+			Name:  fmt.Sprintf("Item-number-%s", itemID),
 			Title: fmt.Sprintf("Item id: %s", itemID),
 			Mac: application.MacWindow{
 				InvisibleTitleBarHeight: 50,

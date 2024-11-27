@@ -19,6 +19,7 @@
   --checkbox-bg: #3f3f3f;
   --completed-bg: #444444;
   --feedback-bg: #00dd42;
+  --feedback-color: #181a17;
   --footer-color: #91ca89;
   --completed-text: #582a2a;
 }
@@ -41,7 +42,8 @@
   --single-todo-title: #333333;
   --checkbox-bg: #e0e0e0;
   --completed-bg: #a7a7a7;
-  --feedback-bg: #06dd4e;
+  --feedback-bg: #051806;
+  --feedback-color: #1eff00;
   --footer-color: #4caf50;
   --completed-text: #8b4343;
 }
@@ -485,7 +487,7 @@ body {
   transform: translateX(-50%);
   background-color: var(--feedback-bg);
   border: 1px solid var(--bg-primary);
-  color: var(--button-text);
+  color: var(--feedback-color);
   padding: 30px 40vw;
   border-radius: 4px;
   text-align: center;
